@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 import 'screens/login/login_page.dart';
+import 'state/app_state.dart';
 
 void main() {
-  runApp(const GoodFoodApp());
+  runApp(GoodFoodApp(appState: AppState()));
 }
 
 class GoodFoodApp extends StatelessWidget {
-  const GoodFoodApp({super.key});
+  const GoodFoodApp({super.key, required this.appState});
+
+  final AppState appState;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'GoodFood',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark, // mantém o “cinza/fosco” por padrão
-      home: const LoginPage(),
+      theme: AppTheme.dark,
+      home: LoginPage(appState: appState),
     );
   }
 }

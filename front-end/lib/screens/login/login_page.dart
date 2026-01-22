@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../home/home_page.dart';
+import '../../state/app_state.dart';
+import '../auth/forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, required this.appState});
+  final AppState appState;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -36,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = false);
 
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomePage()),
+      MaterialPageRoute(builder: (_) => HomePage(appState: widget.appState)),
     );
   }
 
@@ -80,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 10),
 
                   Text(
-                    'Avalie restaurantes de verdade.\nSem publi disfarçada.',
+                    'Avalie restaurantes de verdade.\nSem publis disfarçada.',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: const Color(0xFFB7B7B7),
@@ -150,10 +153,10 @@ class _LoginPageState extends State<LoginPage> {
                               alignment: Alignment.centerRight,
                               child: TextButton(
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content:
-                                          Text('TODO: recuperação de senha'),
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const ForgotPasswordPage(),
                                     ),
                                   );
                                 },
