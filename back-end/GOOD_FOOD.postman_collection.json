@@ -1,0 +1,157 @@
+{
+  "info": {
+    "_postman_id": "64fbc142-1864-4a05-97cc-193b5a340196",
+    "name": "GOOD_FOOD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50348444",
+    "_collection_link": "https://go.postman.co/collection/50348444-64fbc142-1864-4a05-97cc-193b5a340196?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Cadastrar usuário",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"name\":\"Erik\",\"email\":\"erik@email.com\",\"password\":\"123456\"}",
+                  "type": "text",
+                  "uuid": "1f096f35-c9bf-4312-a30a-3e7fda9438a5",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "profilePic",
+                  "type": "file",
+                  "uuid": "391ec275-fd30-46c0-8acc-83117c5ab633",
+                  "contentType": "multipart/form-data",
+                  "src": "/C:/Users/Erik/Desktop/foto de perfil.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{URL_BASE}}/api/auth/register",
+              "host": [
+                "{{URL_BASE}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar usuário",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL_BASE}}/api/user",
+              "host": [
+                "{{URL_BASE}}"
+              ],
+              "path": [
+                "api",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login do usuário",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnb29kLWZvb2QtYXBpIiwic3ViIjoiZXJpa0BlbWFpbC5jb20iLCJleHAiOjE3Njg1MzkwNzh9.Bs_qS67_ZXtBeUpGrX_P_0XmrKQdPm-avWS9ZUVFVzQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\":\"erik@email.com\",\r\n    \"password\":\"123456\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL_BASE}}/api/auth/login",
+              "host": [
+                "{{URL_BASE}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "URL_BASE",
+      "value": ""
+    },
+    {
+      "key": "TOKEN",
+      "value": ""
+    }
+  ]
+}

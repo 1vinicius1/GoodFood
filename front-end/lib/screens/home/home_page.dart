@@ -7,6 +7,7 @@ import '../timeline/timeline_page.dart';
 import '../lists/lists_page.dart';
 import '../friends_activity/friends_activity_page.dart';
 import '../login/login_page.dart';
+import '../../data/token_storage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.appState});
@@ -101,13 +102,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 const _Divider(),
                 _MenuItem(
                   title: 'Sair',
-                  onTap: () {
+                  onTap: () async {
                     Navigator.of(context).pop(); // fecha o bottom sheet
+
+                    // limpa token/nome persistidos
+                    await TokenStorage().clear();
+
+                    // reseta sessão no app (se você tiver setSession)
+                    widget.appState.setSession(name: 'Visitante', token: '');
+
+                    if (!mounted) return;
+
+                    // volta pro login e limpa a pilha
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
                         builder: (_) => LoginPage(appState: widget.appState),
                       ),
-                      (route) => false, // limpa tudo pra não voltar com "back"
+                      (route) => false,
                     );
                   },
                 ),

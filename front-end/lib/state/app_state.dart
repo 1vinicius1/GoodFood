@@ -31,12 +31,19 @@ class Review {
 }
 
 class AppState extends ChangeNotifier {
-
   AppState() {
     _seed();
   }
 
   String currentUserName = 'Vinicius';
+  String? authToken;
+
+  void setSession({required String name, required String token}) {
+    currentUserName = name;
+    authToken = token;
+    notifyListeners();
+  }
+
   final List<Restaurant> restaurants = [];
   final Map<String, List<Review>> _reviewsByRestaurant = {};
 

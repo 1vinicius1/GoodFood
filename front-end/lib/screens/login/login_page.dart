@@ -3,6 +3,9 @@ import '../home/home_page.dart';
 import '../../state/app_state.dart';
 import '../auth/forgot_password_page.dart';
 import '../auth/sign_up_page.dart';
+import '../../data/token_storage.dart';
+import '../../data/api_client.dart';
+import '../../data/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.appState});
@@ -20,6 +23,16 @@ class _LoginPageState extends State<LoginPage> {
   bool _hidePass = true;
   bool _loading = false;
 
+  late final AuthService _auth;
+
+  @override
+  void initState() {
+    super.initState();
+    final storage = TokenStorage();
+    final api = ApiClient(storage);
+    _auth = AuthService(api, storage);
+  }
+
   @override
   void dispose() {
     _emailCtrl.dispose();
@@ -33,15 +46,28 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _loading = true);
 
-    // TODO: substituir por login real (API / Firebase)
-    await Future.delayed(const Duration(milliseconds: 700));
+    try {
+      final dto = await _auth.login(
+        email: _emailCtrl.text,
+        password: _passCtrl.text,
+      );
 
-    if (!mounted) return;
-    setState(() => _loading = false);
+      // trava "usuário logado" no app (nome e token)
+      widget.appState.setSession(name: dto.name, token: dto.token);
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => HomePage(appState: widget.appState)),
-    );
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => HomePage(appState: widget.appState)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -60,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const SizedBox(height: 12),
 
-                  // Logo "GoodFood" no estilo do protótipo
+                  // Logo "GoodFood"
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
@@ -113,9 +139,8 @@ class _LoginPageState extends State<LoginPage> {
                               validator: (v) {
                                 final value = (v ?? '').trim();
                                 if (value.isEmpty) return 'Informe seu email';
-                                if (!value.contains('@')) {
+                                if (!value.contains('@'))
                                   return 'Email inválido';
-                                }
                                 return null;
                               },
                             ),
@@ -142,9 +167,8 @@ class _LoginPageState extends State<LoginPage> {
                               validator: (v) {
                                 final value = (v ?? '').trim();
                                 if (value.isEmpty) return 'Informe sua senha';
-                                if (value.length < 6) {
+                                if (value.length < 6)
                                   return 'Mínimo 6 caracteres';
-                                }
                                 return null;
                               },
                             ),
