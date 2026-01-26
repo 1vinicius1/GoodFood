@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../home/home_page.dart';
 import '../../state/app_state.dart';
 import '../auth/forgot_password_page.dart';
+import '../auth/sign_up_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.appState});
@@ -192,9 +193,9 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('TODO: cadastro'),
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const SignUpPage(),
                                       ),
                                     );
                                   },

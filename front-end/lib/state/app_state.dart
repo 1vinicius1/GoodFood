@@ -31,10 +31,12 @@ class Review {
 }
 
 class AppState extends ChangeNotifier {
+
   AppState() {
     _seed();
   }
 
+  String currentUserName = 'Vinicius';
   final List<Restaurant> restaurants = [];
   final Map<String, List<Review>> _reviewsByRestaurant = {};
 

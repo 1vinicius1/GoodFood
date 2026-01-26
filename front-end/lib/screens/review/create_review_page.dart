@@ -17,7 +17,6 @@ class CreateReviewPage extends StatefulWidget {
 
 class _CreateReviewPageState extends State<CreateReviewPage> {
   final _formKey = GlobalKey<FormState>();
-  final _authorCtrl = TextEditingController(text: 'Vinicius');
   final _textCtrl = TextEditingController();
   final _ticketCtrl = TextEditingController();
 
@@ -30,7 +29,6 @@ class _CreateReviewPageState extends State<CreateReviewPage> {
 
   @override
   void dispose() {
-    _authorCtrl.dispose();
     _textCtrl.dispose();
     _ticketCtrl.dispose();
     super.dispose();
@@ -45,7 +43,7 @@ class _CreateReviewPageState extends State<CreateReviewPage> {
         : double.tryParse(_ticketCtrl.text.trim().replaceAll(',', '.'));
 
     final review = Review(
-      author: _authorCtrl.text.trim(),
+      author: widget.appState.currentUserName,
       stars: _stars,
       text: _textCtrl.text.trim(),
       ticketMedio: ticket,
@@ -90,19 +88,6 @@ class _CreateReviewPageState extends State<CreateReviewPage> {
                         ),
                       ),
                       const SizedBox(height: 14),
-
-                      TextFormField(
-                        controller: _authorCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Seu nome',
-                        ),
-                        validator: (v) {
-                          final s = (v ?? '').trim();
-                          if (s.isEmpty) return 'Informe seu nome';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
 
                       _StarsPicker(
                         label: 'Nota',
