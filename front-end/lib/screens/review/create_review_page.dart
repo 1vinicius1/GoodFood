@@ -38,12 +38,20 @@ class _CreateReviewPageState extends State<CreateReviewPage> {
     final ok = _formKey.currentState?.validate() ?? false;
     if (!ok) return;
 
-    final ticket = _ticketCtrl.text.trim().isEmpty
-        ? null
-        : double.tryParse(_ticketCtrl.text.trim().replaceAll(',', '.'));
+    // 🔥 ticket agora SEMPRE é double (se vazio/errado vira 0.0)
+    final parsed = double.tryParse(_ticketCtrl.text.trim().replaceAll(',', '.'));
+    final ticket = parsed ?? 0.0;
+
+    // 🔒 autor travado no usuário logado (nome vindo do /me ou do token)
+    final author = widget.appState.me?['name']?.toString().trim();
+    final finalAuthor =
+    (widget.appState.currentUserName?.trim().isNotEmpty ?? false)
+        ? widget.appState.currentUserName!.trim()
+        : 'Usuário';
+
 
     final review = Review(
-      author: widget.appState.currentUserName,
+      author: finalAuthor,
       stars: _stars,
       text: _textCtrl.text.trim(),
       ticketMedio: ticket,
@@ -105,7 +113,10 @@ class _CreateReviewPageState extends State<CreateReviewPage> {
 
                       TextFormField(
                         controller: _ticketCtrl,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                          signed: false,
+                        ),
                         decoration: const InputDecoration(
                           labelText: 'Ticket médio (opcional)',
                           hintText: 'Ex: 35,00',

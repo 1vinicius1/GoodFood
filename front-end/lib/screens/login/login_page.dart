@@ -6,6 +6,7 @@ import '../auth/sign_up_page.dart';
 import '../../data/token_storage.dart';
 import '../../data/api_client.dart';
 import '../../data/auth_service.dart';
+import '../../data/user_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.appState});
@@ -24,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _loading = false;
 
   late final AuthService _auth;
+  late final UserService _user;
 
   @override
   void initState() {
@@ -31,6 +33,7 @@ class _LoginPageState extends State<LoginPage> {
     final storage = TokenStorage();
     final api = ApiClient(storage);
     _auth = AuthService(api, storage);
+    _user = UserService(api);
   }
 
   @override
@@ -52,8 +55,17 @@ class _LoginPageState extends State<LoginPage> {
         password: _passCtrl.text,
       );
 
-      // trava "usuário logado" no app (nome e token)
+      // salva sessão (nome e token)
       widget.appState.setSession(name: dto.name, token: dto.token);
+
+      // busca /user/me e salva no AppState
+      try {
+        final userService = UserService(ApiClient(TokenStorage()));
+        final me = await userService.me();
+        widget.appState.setUserFromMe(me);
+      } catch (_) {
+        // se /me falhar, não quebra o login (MVP)
+      }
 
       if (!mounted) return;
 
@@ -219,7 +231,9 @@ class _LoginPageState extends State<LoginPage> {
                                   onPressed: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (_) => const SignUpPage(),
+                                        builder: (_) => SignUpPage(
+                                          appState: widget.appState,
+                                        ),
                                       ),
                                     );
                                   },

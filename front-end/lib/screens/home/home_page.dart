@@ -311,7 +311,7 @@ class _Grid extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.network(r.imageUrl, fit: BoxFit.cover),
+                Image.asset(r.imageUrl, fit: BoxFit.cover),
                 Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(

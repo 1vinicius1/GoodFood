@@ -12,8 +12,13 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // MVP: “usuário mock”
-    const userName = 'Vinicius';
+    final userName = (appState.currentUserName?.trim().isNotEmpty ?? false)
+        ? appState.currentUserName!.trim()
+        : 'Usuário';
+
+    final userEmail = (appState.currentUserEmail?.trim().isNotEmpty ?? false)
+        ? appState.currentUserEmail!.trim()
+        : '';
 
     // total de avaliações (todas somadas)
     final totalReviews = appState.restaurants.fold<int>(
@@ -32,7 +37,7 @@ class ProfilePage extends StatelessWidget {
               color: _panel,
               child: Column(
                 children: [
-                  _TopBar(title: 'Perfil'),
+                  const _TopBar(title: 'Perfil'),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
                     child: Row(
@@ -46,7 +51,6 @@ class ProfilePage extends StatelessWidget {
                             size: 28,
                           ),
                         ),
-
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -61,13 +65,16 @@ class ProfilePage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                '@1vinicius1',
-                                style: TextStyle(
-                                  color: _muted,
-                                  fontWeight: FontWeight.w700,
+
+                              // NÃO pode ser const pq depende de variável
+                              if (userEmail.isNotEmpty)
+                                Text(
+                                  userEmail,
+                                  style: const TextStyle(
+                                    color: _muted,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -82,9 +89,9 @@ class ProfilePage extends StatelessWidget {
                       children: [
                         _StatCard(label: 'Avaliações', value: '$totalReviews'),
                         const SizedBox(width: 12),
-                        _StatCard(label: 'Amigos', value: '12'),
+                        const _StatCard(label: 'Amigos', value: '12'),
                         const SizedBox(width: 12),
-                        _StatCard(label: 'Listas', value: '2'),
+                        const _StatCard(label: 'Listas', value: '2'),
                       ],
                     ),
                   ),

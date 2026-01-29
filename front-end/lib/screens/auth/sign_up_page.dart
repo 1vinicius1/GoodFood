@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import '../home/home_page.dart';
+import '../../state/app_state.dart';
+import '../../data/token_storage.dart';
+import '../../data/api_client.dart';
+import '../../data/auth_service.dart';
+import '../../data/user_service.dart';
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+  const SignUpPage({super.key, required this.appState});
+  final AppState appState;
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -19,10 +26,22 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _acceptTerms = true;
   bool _showPass = false;
 
+  late final AuthService _auth;
+  late final UserService _user;
+
   static const _bg = Color(0xFF1E1E1E);
   static const _panel = Color(0xFF3C3C3C);
   static const _accent = Color(0xFFCE4E32);
   static const _muted = Color(0xFFB7B7B7);
+
+  @override
+  void initState() {
+    super.initState();
+    final storage = TokenStorage();
+    final api = ApiClient(storage);
+    _auth = AuthService(api, storage);
+    _user = UserService(api);
+  }
 
   @override
   void dispose() {
@@ -36,6 +55,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _submit() async {
     final ok = _formKey.currentState?.validate() ?? false;
     if (!ok) return;
+
     if (!_acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Você precisa aceitar os termos.')),
@@ -45,36 +65,41 @@ class _SignUpPageState extends State<SignUpPage> {
 
     setState(() => _loading = true);
 
-    // MVP: simula criação (depois entra backend/Firebase)
-    await Future.delayed(const Duration(milliseconds: 900));
+    try {
+      // 1) registra no backend (multipart, sem foto)
+      final dto = await _auth.register(
+        name: _nameCtrl.text,
+        email: _emailCtrl.text,
+        password: _passCtrl.text,
+        profilePic: null,
+      );
 
-    if (!mounted) return;
-    setState(() => _loading = false);
+      // 2) salva sessão no AppState (nome + token)
+      widget.appState.setSession(name: dto.name, token: dto.token);
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF343434),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Conta criada!',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-        ),
-        content: Text(
-          'Bem-vindo(a), ${_nameCtrl.text.trim()}.\nAgora você já pode entrar no GoodFood.',
-          style: const TextStyle(color: _muted, height: 1.35),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // fecha dialog
-              Navigator.of(context).pop(); // volta pro login
-            },
-            child: const Text('Ir para o login'),
-          ),
-        ],
-      ),
-    );
+      // 3) puxa /user/me e salva no AppState
+      try {
+        final userService = UserService(ApiClient(TokenStorage()));
+        final me = await userService.me();
+        widget.appState.setUserFromMe(me);
+      } catch (_) {
+        // se /me falhar, segue (MVP)
+      }
+
+      if (!mounted) return;
+
+      // 4) vai pra Home limpando o back stack
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => HomePage(appState: widget.appState)),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -97,7 +122,10 @@ class _SignUpPageState extends State<SignUpPage> {
                       children: [
                         IconButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.arrow_back, color: Colors.black54),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.black54,
+                          ),
                         ),
                         Expanded(
                           child: Center(
@@ -108,8 +136,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                   fontWeight: FontWeight.w900,
                                 ),
                                 children: [
-                                  TextSpan(text: 'Good', style: TextStyle(color: Colors.white)),
-                                  TextSpan(text: 'Food', style: TextStyle(color: _accent)),
+                                  TextSpan(
+                                    text: 'Good',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  TextSpan(
+                                    text: 'Food',
+                                    style: TextStyle(color: _accent),
+                                  ),
                                 ],
                               ),
                             ),
@@ -194,9 +228,12 @@ class _SignUpPageState extends State<SignUpPage> {
                                 labelText: 'Senha',
                                 hintText: 'Mínimo 6 caracteres',
                                 suffixIcon: IconButton(
-                                  onPressed: () => setState(() => _showPass = !_showPass),
+                                  onPressed: () =>
+                                      setState(() => _showPass = !_showPass),
                                   icon: Icon(
-                                    _showPass ? Icons.visibility_off : Icons.visibility,
+                                    _showPass
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
                                     color: _muted,
                                   ),
                                 ),
@@ -204,7 +241,8 @@ class _SignUpPageState extends State<SignUpPage> {
                               validator: (v) {
                                 final s = (v ?? '');
                                 if (s.isEmpty) return 'Informe uma senha';
-                                if (s.length < 6) return 'Senha precisa ter pelo menos 6';
+                                if (s.length < 6)
+                                  return 'Senha precisa ter pelo menos 6';
                                 return null;
                               },
                             ),
@@ -221,7 +259,8 @@ class _SignUpPageState extends State<SignUpPage> {
                               validator: (v) {
                                 final s = (v ?? '');
                                 if (s.isEmpty) return 'Confirme sua senha';
-                                if (s != _passCtrl.text) return 'Senhas não conferem';
+                                if (s != _passCtrl.text)
+                                  return 'Senhas não conferem';
                                 return null;
                               },
                             ),
@@ -229,7 +268,10 @@ class _SignUpPageState extends State<SignUpPage> {
                             const SizedBox(height: 12),
 
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF343434),
                                 borderRadius: BorderRadius.circular(14),
@@ -238,14 +280,19 @@ class _SignUpPageState extends State<SignUpPage> {
                                 children: [
                                   Checkbox(
                                     value: _acceptTerms,
-                                    onChanged: (v) => setState(() => _acceptTerms = v ?? false),
+                                    onChanged: (v) => setState(
+                                      () => _acceptTerms = v ?? false,
+                                    ),
                                     activeColor: _accent,
                                   ),
                                   const SizedBox(width: 6),
                                   const Expanded(
                                     child: Text(
                                       'Aceito os termos e políticas do GoodFood',
-                                      style: TextStyle(color: _muted, fontWeight: FontWeight.w700),
+                                      style: TextStyle(
+                                        color: _muted,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -272,7 +319,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ? const SizedBox(
                                       width: 20,
                                       height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2.2),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.2,
+                                      ),
                                     )
                                   : const Text('Criar conta'),
                             ),

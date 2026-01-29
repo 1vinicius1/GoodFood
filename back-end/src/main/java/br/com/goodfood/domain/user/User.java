@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(of = "idUser")
 @Table(name = "users")
 public class User {
@@ -28,6 +26,8 @@ public class User {
 
     @Column(name = "profilePic")
     private String profilePic;
+
+    public User(){}
 
     public User(String name, String email, String password, String profilePic) {
         this.name = name;
